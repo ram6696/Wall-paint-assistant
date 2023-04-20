@@ -1,10 +1,8 @@
-import React, { useState } from 'react';
-import * as Jimp from 'jimp/browser/lib/jimp.js';
-import { loadImage, createCanvas } from 'browser-image-manipulation';
+import React, { Fragment, useState } from 'react';
 import axios from 'axios';
 import ImageRenderer from './ImageRender';
-const FormData = require('form-data');
-
+import {Buffer} from 'buffer';
+import NavBar from "../Layouts/NavBar";
 
 function RoomColorChanger() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -13,11 +11,8 @@ function RoomColorChanger() {
   const [recommendedColors, setRecommendedColors] = useState([]);
   const [roomType, setRoomType] = useState(null);
   const [roomItems, setRoomItems] = useState(null);
-  const [dominantColors, setDominantColors] = useState([{}]);
   const [wallBoundingBoxesState, setWallBoundingBoxes] = useState([{}]);
   const [otherItemsBoundingBoxes, setOtherItemsBoudingBoxes] = useState([{}]);
-  const [] = useState([]);
-  const [] = useState({})
 
 
   const handleFileInputChange = async (e) => {
@@ -34,7 +29,7 @@ function RoomColorChanger() {
           }
         };
         const imageInfoPayload = {
-          url: 'https://e607-36-255-87-126.ap.ngrok.io/get-image-info',
+          url: 'http://localhost:3001/get-image-info',
           headers: {
             Authorization: `ApiKey fCnVhGG.av8ENqYZDpsEagzSsXWAufrnmVx3QyvI`,
             'Content-Type': 'application/json'
@@ -50,23 +45,6 @@ function RoomColorChanger() {
         const itemsInRoom = completeImageData.itemsInRoom.map(item => item).join(' ,');
         setRoomItems(itemsInRoom);
         const recommendedColors = completeImageData.recommendedColors;
-        console.log(recommendedColors);
-        const colors = [
-          { name: 'Whisper', r: 237, g: 240, b: 243, a: 1 },
-          { name: 'Sea Foam', r: 203, g: 221, b: 212, a: 1 },
-          { name: 'Pale Lilac', r: 225, g: 213, b: 231, a: 1 },
-          { name: 'Buttercream', r: 252, g: 234, b: 187, a: 1 },
-          { name: 'Apricot', r: 255, g: 203, b: 164, a: 1 },
-          { name: 'Sandstone', r: 236, g: 214, b: 171, a: 1 },
-          { name: 'Misty Blue', r: 186, g: 208, b: 221, a: 1 },
-          { name: 'Sage', r: 183, g: 206, b: 186, a: 1 },
-          { name: 'Lavender', r: 199, g: 183, b: 206, a: 1 },
-          { name: 'Crimson', r: 220, g: 20, b: 60, a: 1 },
-          { name: 'Emerald', r: 80, g: 200, b: 120, a: 1 },
-          { name: 'Cobalt', r: 44, g: 117, b: 255, a: 1 },
-        ]
-        // console.log(colors);
-        // setDominantColors(colors);
         setRecommendedColors(recommendedColors);
       };
       reader.readAsDataURL(e.target.files[0]);
@@ -76,7 +54,6 @@ function RoomColorChanger() {
 
   const setModifiedImageUsingJimp = async (palette) => {
     console.log(palette, 'palette');
-    // console.log(selectedFile.buffer);
     // Read the file as an ArrayBuffer
     const arrayBuffer = await new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -85,10 +62,10 @@ function RoomColorChanger() {
       reader.readAsArrayBuffer(selectedFile);
    });
 
-  // Convert the ArrayBuffer to a Buffer
+    // Convert the ArrayBuffer to a Buffer
     const buffer = Buffer.from(arrayBuffer);
 
-    const response = await axios('https://e607-36-255-87-126.ap.ngrok.io/upload', {
+    const response = await axios('http://localhost:3001/upload', {
       method: 'POST',
       data: {
         image: buffer,
@@ -103,8 +80,6 @@ function RoomColorChanger() {
     }
 
     setModifiedImage(response?.data?.modifiedImageBuffer?.data);
-  
-    // setModifiedImage(`../public/output.jpg`);
   }
 
 
@@ -127,6 +102,25 @@ function RoomColorChanger() {
     />
   );
 
+  const downloadImage = () => {
+    const base = Buffer.from(new Uint8Array(modifiedImage)).toString('base64');
+    console.log(base, 'base buffer');
+    const base64Image = modifiedImage ? `data:image/jpeg;base64,${base}` : '';
+    const link = document.createElement('a');
+    link.href = base64Image;
+    link.download = 'downloaded_image.jpg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const emailImage = () => {
+    const base = Buffer.from(new Uint8Array(modifiedImage)).toString('base64');
+    console.log(base, 'base buffer');
+    const base64Image = modifiedImage ? `data:image/jpeg;base64,${base}` : '';
+    // API to send email to the user
+  }
+
   const ColorPalette = ({ baseColor, palette }) => (
     <div style={{ marginBottom: '20px' }}>
       <h3>Base Color: {baseColor.name}</h3>
@@ -141,37 +135,51 @@ function RoomColorChanger() {
   );
 
   return (
-    <div>
-      <input
-        type="file"
-        name="file"
-        accept="image/*"
-        onChange={handleFileInputChange}
-        style={{ display: 'none' }}
-        id="file-input"
-      />
-      <button onClick={() => document.getElementById('file-input').click()} className='upload-btn'>Select Image</button>
+    <>
+        <NavBar />
+        <div className="main-container">
+            <input
+                type="file"
+                name="file"
+                accept="image/*"
+                onChange={handleFileInputChange}
+                style={{ display: 'none' }}
+                id="file-input"
+            />
+            <button onClick={() => document.getElementById('file-input').click()} className="upload-btn">
+                Select Image
+            </button>
 
-      {selectedImage && recommendedColors?.length && (
-        <div class="parent">
-          <div className='image-container'>
-            <img src={selectedImage} alt="Selected room" style={{ maxWidth: '50%', height: 'auto' }} />
-            {modifiedImage && (
-              <ImageRenderer data={modifiedImage} />
+            {selectedImage && recommendedColors?.length && (
+                <div className="parent">
+                    <div className="image-container">
+                        <img src={selectedImage} alt="Selected room" className="preview-image" />
+                        {modifiedImage && <ImageRenderer data={modifiedImage} style={{ width: 'calc(100% - 10px)', height: 'auto', objectFit: 'contain' }} />}
+                    </div>
+                    {modifiedImage && (
+                        <div className="button-container">
+                            <button onClick={downloadImage} className="upload-btn">
+                                Download Image
+                            </button>
+                            <button onClick={emailImage} className="upload-btn">
+                                Email Image
+                            </button>
+                        </div>
+                    )}
+                <div />
+                    <p>Items in the scene: {roomItems || 'Unknown'}</p>
+                    <p>scene predicted: {roomType || 'Unknown'}</p>
+                    <div className="color-palettes-container">
+                        {recommendedColors.length &&
+                            recommendedColors.map((palette, index) => (
+                                <ColorPalette key={index} baseColor={palette.baseColor} palette={palette.palette} />
+                            ))}
+                    </div>
+                </div>
             )}
-          </div>
-          <div/>
-          <p>Items in the scene: {roomItems || 'Unknown'}</p>
-          <p>scene predicted: {roomType || 'Unknown'}</p>
-          <div>
-            {recommendedColors.length && recommendedColors.map((palette, index) => (
-              <ColorPalette key={index} baseColor={palette.baseColor} palette={palette.palette} />
-            ))}
-          </div>
         </div>
-      )}
-    </div>
-  );
+    </>
+);
 }
 
 export default RoomColorChanger;

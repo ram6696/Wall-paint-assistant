@@ -9,16 +9,18 @@ const sharp = require("sharp");
 const Vibrant = require("node-vibrant");
 const namer = require("color-namer");
 const UserModel = require("./models/Users");
+const AppResponse = require("./services/AppResponse");
+
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.json({limit: '50mb'}))
 app.use(cors({ origin: '*' }));
+require("./configs/mongoDB");
 
 const modifyImage = async (image, wallBoundingBoxes, excludedBoundingBoxes, color) => {
     try {
         const {r, g, b, a} = color;
-        console.log(color);
         const imageBuffer = Buffer.from(image.data);
 
         const imageRead = await Jimp.read(imageBuffer);
@@ -94,7 +96,6 @@ app.post('/get-image-info', async (req, res) => {
       }).map(item => item.label);
 
       // get the recommended colors according to the colors in the room
-
       const finalColors = []
       // get the room type according to the items in the room
       const recommendedColors = await recommendColorPalettes(image.base64.split('data:image/jpeg;base64,')[1]);
@@ -108,6 +109,10 @@ app.post('/get-image-info', async (req, res) => {
         console.log(error);
         res.status(500).send('Error processing image');
     }
+});
+
+app.post("/send-email", async (req, res) => {
+
 })
 
 app.post("/users", async (req, res) => {
@@ -173,7 +178,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-
+// accept image in base64 format -> gives back what color are ther in image
 const getImageColors = async (base64Image, numColors = 5) => {
   const buffer = Buffer.from(base64Image, "base64");
 
@@ -217,6 +222,7 @@ const recommendColorPalettes = async (base64Image) => {
 
   return imageColors.map((color) => {
     const baseColor = chroma(color);
+    console.log(baseColor, 'baseColor');
     return {
       baseColor: {
         hex: baseColor.hex(),
