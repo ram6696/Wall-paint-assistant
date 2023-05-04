@@ -43,6 +43,7 @@ const LoginForm = () => {
         toast("Enter valid username or password");
         setError(true);
       } else if (res && res.status === "SUCCESS") {
+        console.log(res.data);
         handleCookies(res.data.user);
       } else {
         let message =

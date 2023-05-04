@@ -3,6 +3,9 @@ import axios from 'axios';
 import ImageRenderer from './ImageRender';
 import {Buffer} from 'buffer';
 import NavBar from "../Layouts/NavBar";
+import WebCookies from "../common/Cookies/cookies";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function RoomColorChanger() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -13,7 +16,11 @@ function RoomColorChanger() {
   const [roomItems, setRoomItems] = useState(null);
   const [wallBoundingBoxesState, setWallBoundingBoxes] = useState([{}]);
   const [otherItemsBoundingBoxes, setOtherItemsBoudingBoxes] = useState([{}]);
+  const [showRecommendedColors, setShowRecommendedColors] = useState(false);
 
+  const handleShowRecommendedColors = () => {
+    setShowRecommendedColors(true);
+  };
 
   const handleFileInputChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
@@ -44,6 +51,7 @@ function RoomColorChanger() {
         setOtherItemsBoudingBoxes(completeImageData.excludeBoundingBoxes)
         const itemsInRoom = completeImageData.itemsInRoom.map(item => item).join(' ,');
         setRoomItems(itemsInRoom);
+        setRoomType(completeImageData.roomType);
         const recommendedColors = completeImageData.recommendedColors;
         setRecommendedColors(recommendedColors);
       };
@@ -114,11 +122,21 @@ function RoomColorChanger() {
     document.body.removeChild(link);
   };
 
-  const emailImage = () => {
-    const base = Buffer.from(new Uint8Array(modifiedImage)).toString('base64');
-    console.log(base, 'base buffer');
-    const base64Image = modifiedImage ? `data:image/jpeg;base64,${base}` : '';
-    // API to send email to the user
+  const emailImage = async () => {
+    
+    // Convert the ArrayBuffer to a Buffer
+    const buffer = Buffer.from(modifiedImage, 'base64');
+    let cookie = WebCookies.GetCookie("userin");
+    cookie = JSON.parse(cookie);
+    console.log(cookie.email, 'cookie');
+    toast('Image has been successfully sent to your email address');
+    await axios('http://localhost:3001/send-email', {
+      method: 'POST',
+      data: {
+        image: buffer,
+        to: cookie.email
+      },
+    });
   }
 
   const ColorPalette = ({ baseColor, palette }) => (
@@ -154,7 +172,7 @@ function RoomColorChanger() {
                 <div className="parent">
                     <div className="image-container">
                         <img src={selectedImage} alt="Selected room" className="preview-image" />
-                        {modifiedImage && <ImageRenderer data={modifiedImage} style={{ width: 'calc(100% - 10px)', height: 'auto', objectFit: 'contain' }} />}
+                        {modifiedImage && <ImageRenderer data={modifiedImage} />}
                     </div>
                     {modifiedImage && (
                         <div className="button-container">
@@ -167,19 +185,20 @@ function RoomColorChanger() {
                         </div>
                     )}
                 <div />
-                    <p>Items in the scene: {roomItems || 'Unknown'}</p>
-                    <p>scene predicted: {roomType || 'Unknown'}</p>
+                    <p style={{ fontWeight: "800" }}><strong>ITEMS IN THE SCENE: </strong>{roomItems || 'Unknown'}</p>
+                    <p><strong>SCENE PREDICTED: </strong>{roomType || 'Unknown'}</p>
                     <div className="color-palettes-container">
-                        {recommendedColors.length &&
+                        {showRecommendedColors && recommendedColors.length &&
                             recommendedColors.map((palette, index) => (
                                 <ColorPalette key={index} baseColor={palette.baseColor} palette={palette.palette} />
                             ))}
                     </div>
+                    <button onClick={handleShowRecommendedColors} className="upload-btn">Show Recommended Colors</button>
                 </div>
             )}
         </div>
     </>
-);
+  );
 }
 
 export default RoomColorChanger;

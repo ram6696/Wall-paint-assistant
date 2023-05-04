@@ -8,7 +8,7 @@ const ImageRenderer = ({ data }) => {
 
   return (  
     <div>
-      {data && <img src={base64Image} alt="Your Description"/>}
+      {data && <img src={base64Image} alt="Your Description" className="preview-image"/>}
     </div>
   );
 };

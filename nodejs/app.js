@@ -10,6 +10,7 @@ const Vibrant = require("node-vibrant");
 const namer = require("color-namer");
 const UserModel = require("./models/Users");
 const AppResponse = require("./services/AppResponse");
+const FormData = require('form-data');
 
 
 const app = express();
@@ -67,6 +68,11 @@ app.post('/upload', async (req, res) => {
   }
 });
 
+const base64ToBuffer = (base64, contentType = '') => {
+  const binaryString = Buffer.from(base64, 'base64');
+  return binaryString;
+};
+
 app.post('/get-image-info', async (req, res) => {
     try {
       const image = req.body.image;
@@ -76,34 +82,59 @@ app.post('/get-image-info', async (req, res) => {
         }
       };
       const darwinConfig = {
-        url: 'https://darwin.v7labs.com/ai/models/fbf57212-1945-43d0-8bd9-ea0a95130d7d/infer',
+        url: 'https://darwin.v7labs.com/ai/models/3e051276-2959-42f5-b224-6f1f14fbda0b/infer',
         headers: {
-          Authorization: `ApiKey fCnVhGG.av8ENqYZDpsEagzSsXWAufrnmVx3QyvI`,
+          Authorization: `ApiKey XSCF80j.2-xPGc4tKJnhG1n7nM4aU3HKx8hc0VbC`,
           'Content-Type': 'application/json'
         },
         data: JSON.stringify(body),
         method: 'POST'
       }
-      // get the predictions from the new model
-      const newImageProcessResponse = await axios.request(darwinConfig);
-      const annotations = newImageProcessResponse.data.result;
-      const walls = annotations.filter(annotation => annotation.label === 'walls');
+
+      const roboFlowImageProcessResponse = await axios.request(darwinConfig);
+      const roboFlowAnnotations = roboFlowImageProcessResponse.data.result;
+      const walls = roboFlowAnnotations.filter(annotation => annotation.label === 'wall');
       const wallBoundingBoxes = walls.map(wall => wall.bounding_box);
-      const otherItems =  annotations.filter(annotation => annotation.label !== 'walls');
-      const excludeBoundingBoxes = otherItems.map(wall => wall.bounding_box);
-      const itemsInRoom = annotations.filter((value, index, self) => {
+      // const otherItems =  roboFlowAnnotations.filter(annotation => annotation.label !== 'wall');
+      // const excludeBoundingBoxes = otherItems.map(wall => wall.bounding_box);
+      const itemsInRoom = roboFlowAnnotations.filter((value, index, self) => {
         return self.findIndex(v => v.label === value.label) === index;
       }).map(item => item.label);
 
-      // get the recommended colors according to the colors in the room
-      const finalColors = []
+      const formData = new FormData();
+      const imageBuffer = base64ToBuffer(body.image.base64, 'image/jpeg'); // Replace 'image/jpeg' with the correct MIME type for your image
+      formData.append('file', imageBuffer, 'image_filename.ext');
+      const roboFlowConfig = {
+        maxBodyLength: Infinity,
+        url: 'https://detect.roboflow.com/digital-colour-assistant/4?api_key=Yf2HiibluB4exKtFbhsG&confidence=40&overlap=30&format=json',
+        headers: {
+          ...formData.getHeaders(),
+        },
+        data: formData,
+        method: 'POST',
+      }
+      // get the predictions from the new model
+      const newImageProcessResponse = await axios.request(roboFlowConfig);
+      // console.log(JSON.stringify(newImageProcessResponse.data));
+      const annotations = newImageProcessResponse.data.predictions;
+      // const walls = annotations.filter(annotation => annotation.class === 'wall');
+      // const wallBoundingBoxes = walls.map(wall => {return {x: wall.x, y: wall.y, w: wall.width, h: wall.height }});
+      const otherItems =  annotations.filter(annotation => annotation.class !== 'wall');
+      const excludeBoundingBoxes = otherItems.map(wall => {return {x: wall.x, y: wall.y, w: wall.width, h: wall.height }});
+      // const itemsInRoom = annotations.filter((value, index, self) => {
+      //   return self.findIndex(v => v.class === value.class) === index;
+      // }).map(item => item.class);
+
+      const roomType = getRoomType(itemsInRoom);
+
       // get the room type according to the items in the room
       const recommendedColors = await recommendColorPalettes(image.base64.split('data:image/jpeg;base64,')[1]);
       res.status(200).send({
         itemsInRoom,
         wallBoundingBoxes,
         excludeBoundingBoxes,
-        recommendedColors
+        recommendedColors,
+        roomType,
       })
     } catch (error) {
         console.log(error);
@@ -111,8 +142,77 @@ app.post('/get-image-info', async (req, res) => {
     }
 });
 
-app.post("/send-email", async (req, res) => {
+function getRoomType(itemsInRoom) {
+  const roomType = {
+    'living room': ["sofa", "tv", "chairs", "wallframe"],
+    'kitchen': ["chimney", "stove", "cupboards", "kitchencubboard"],
+    'bedroom': ['bed light', 'bed', "wallframe"],
+    'bathroom': ['sink', 'bathtub']
+  };
 
+  let maxScore = 0;
+  let bestMatch = 'unknown';
+
+  for (const [type, items] of Object.entries(roomType)) {
+    const score = items.reduce((acc, item) => acc + (itemsInRoom.includes(item) ? 1 : 0), 0);
+    
+    if (score > maxScore) {
+      maxScore = score;
+      bestMatch = type;
+    }
+  }
+
+  return bestMatch;
+}
+
+app.post("/send-email", async (req, res) => {
+  try {
+    const payload = req.body;
+    console.log(payload.to, 'to email address');
+    const base64 = Buffer.from(payload.image).toString('base64');
+
+    const url = 'https://api.sendgrid.com/v3/mail/send';
+        const options = {
+            headers: {
+                'content-type': 'application/json',
+                'authorization': 'Bearer' + ' ' + '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',
+            },
+        };
+
+        const data = {
+            personalizations: [
+                {
+                    to: [
+                        {
+                            email: payload.to,
+                        },
+                    ],
+                    subject: "AI Painting download Image",
+                },
+            ],
+            from: {
+                email: 'noreply@wfglobal.org',
+                name: 'AI painting',
+            },
+            content: [
+              {
+                type: 'text/html',
+                value: '<p>Hello </p><p>Attaching your ai painting image in this email</p>'
+              },
+            ],
+            attachments: [
+              {
+                content: base64,
+                filename: 'ai-paint-recommended.jpeg',
+                type: 'image/jpeg',
+                disposition: 'attachment'
+              }
+            ]
+        };
+        return axios.post(url, data, options);
+  } catch (error) {
+    //  console.log(error);
+  }
 })
 
 app.post("/users", async (req, res) => {
