@@ -175,7 +175,7 @@ app.post("/send-email", async (req, res) => {
         const options = {
             headers: {
                 'content-type': 'application/json',
-                'authorization': 'Bearer' + ' ' + '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',
+                'authorization': 'Bearer' + ' ' + process.env.SENDGRID_KEY,
             },
         };
 
