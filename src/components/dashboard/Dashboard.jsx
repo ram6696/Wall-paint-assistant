@@ -6,6 +6,7 @@ import NavBar from "../Layouts/NavBar";
 import WebCookies from "../common/Cookies/cookies";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import Loader from "../common/Loder";
 
 function RoomColorChanger() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -17,6 +18,8 @@ function RoomColorChanger() {
   const [wallBoundingBoxesState, setWallBoundingBoxes] = useState([{}]);
   const [otherItemsBoundingBoxes, setOtherItemsBoudingBoxes] = useState([{}]);
   const [showRecommendedColors, setShowRecommendedColors] = useState(false);
+  const [loading, setLoading] = useState(false);
+
 
   const handleShowRecommendedColors = () => {
     setShowRecommendedColors(true);
@@ -28,7 +31,8 @@ function RoomColorChanger() {
       console.log(e.target.files[0]);
 
       const reader = new FileReader();
-      reader.onloadend = async () => {
+      reader.onloadend = async () => {      
+        setLoading(true);
         setSelectedImage(reader.result);
         const body = {
           image: {
@@ -46,6 +50,7 @@ function RoomColorChanger() {
           method: 'POST'
         }
         const newImageProcessResponse = await axios.request(imageInfoPayload);
+        setLoading(false);
         const completeImageData = newImageProcessResponse.data;
         setWallBoundingBoxes(completeImageData.wallBoundingBoxes)  
         setOtherItemsBoudingBoxes(completeImageData.excludeBoundingBoxes)
@@ -167,6 +172,8 @@ function RoomColorChanger() {
             <button onClick={() => document.getElementById('file-input').click()} className="upload-btn">
                 Select Image
             </button>
+
+            {loading && <Loader />} 
 
             {selectedImage && recommendedColors?.length && (
                 <div className="parent">
