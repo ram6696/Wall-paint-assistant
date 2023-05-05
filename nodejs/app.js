@@ -82,45 +82,47 @@ app.post('/get-image-info', async (req, res) => {
         }
       };
       const darwinConfig = {
-        url: 'https://darwin.v7labs.com/ai/models/3e051276-2959-42f5-b224-6f1f14fbda0b/infer',
+        url: 'https://darwin.v7labs.com/ai/models/e59b93fa-27df-4f29-b2ad-b46ce8cf5312/infer',
         headers: {
-          Authorization: `ApiKey XSCF80j.2-xPGc4tKJnhG1n7nM4aU3HKx8hc0VbC`,
+          Authorization: `ApiKey jpb9cqv.T5HDUo7NCal04gPZ46QOyJxk_zTEirH0`,
           'Content-Type': 'application/json'
         },
         data: JSON.stringify(body),
         method: 'POST'
       }
 
+      const itemsToIgnoreForColoring = ['sofa', 'window', 'bed', 'bedlamp', 'chair', 'tv']
+
       const roboFlowImageProcessResponse = await axios.request(darwinConfig);
       const roboFlowAnnotations = roboFlowImageProcessResponse.data.result;
       const walls = roboFlowAnnotations.filter(annotation => annotation.label === 'wall');
       const wallBoundingBoxes = walls.map(wall => wall.bounding_box);
-      // const otherItems =  roboFlowAnnotations.filter(annotation => annotation.label !== 'wall');
-      // const excludeBoundingBoxes = otherItems.map(wall => wall.bounding_box);
+      const otherItems =  roboFlowAnnotations.filter(annotation => itemsToIgnoreForColoring.includes(annotation.label));
+      const excludeBoundingBoxes = otherItems.map(wall => wall.bounding_box);
       const itemsInRoom = roboFlowAnnotations.filter((value, index, self) => {
         return self.findIndex(v => v.label === value.label) === index;
       }).map(item => item.label);
 
-      const formData = new FormData();
-      const imageBuffer = base64ToBuffer(body.image.base64, 'image/jpeg'); // Replace 'image/jpeg' with the correct MIME type for your image
-      formData.append('file', imageBuffer, 'image_filename.ext');
-      const roboFlowConfig = {
-        maxBodyLength: Infinity,
-        url: 'https://detect.roboflow.com/digital-colour-assistant/4?api_key=Yf2HiibluB4exKtFbhsG&confidence=40&overlap=30&format=json',
-        headers: {
-          ...formData.getHeaders(),
-        },
-        data: formData,
-        method: 'POST',
-      }
-      // get the predictions from the new model
-      const newImageProcessResponse = await axios.request(roboFlowConfig);
-      // console.log(JSON.stringify(newImageProcessResponse.data));
-      const annotations = newImageProcessResponse.data.predictions;
+      // const formData = new FormData();
+      // const imageBuffer = base64ToBuffer(body.image.base64, 'image/jpeg'); // Replace 'image/jpeg' with the correct MIME type for your image
+      // formData.append('file', imageBuffer, 'image_filename.ext');
+      // const roboFlowConfig = {
+      //   maxBodyLength: Infinity,
+      //   url: 'https://detect.roboflow.com/digital-colour-assistant/4?api_key=Yf2HiibluB4exKtFbhsG&confidence=40&overlap=30&format=json',
+      //   headers: {
+      //     ...formData.getHeaders(),
+      //   },
+      //   data: formData,
+      //   method: 'POST',
+      // // }
+      // // get the predictions from the new model
+      // const newImageProcessResponse = await axios.request(roboFlowConfig);
+      // // console.log(JSON.stringify(newImageProcessResponse.data));
+      // const annotations = newImageProcessResponse.data.predictions;
       // const walls = annotations.filter(annotation => annotation.class === 'wall');
       // const wallBoundingBoxes = walls.map(wall => {return {x: wall.x, y: wall.y, w: wall.width, h: wall.height }});
-      const otherItems =  annotations.filter(annotation => annotation.class !== 'wall');
-      const excludeBoundingBoxes = otherItems.map(wall => {return {x: wall.x, y: wall.y, w: wall.width, h: wall.height }});
+      // const otherItems =  annotations.filter(annotation => annotation.class !== 'wall');
+      // const excludeBoundingBoxes = otherItems.map(wall => {return {x: wall.x, y: wall.y, w: wall.width, h: wall.height }});
       // const itemsInRoom = annotations.filter((value, index, self) => {
       //   return self.findIndex(v => v.class === value.class) === index;
       // }).map(item => item.class);
