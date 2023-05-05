@@ -68,11 +68,6 @@ app.post('/upload', async (req, res) => {
   }
 });
 
-const base64ToBuffer = (base64, contentType = '') => {
-  const binaryString = Buffer.from(base64, 'base64');
-  return binaryString;
-};
-
 app.post('/get-image-info', async (req, res) => {
     try {
       const image = req.body.image;
@@ -199,7 +194,7 @@ app.post("/send-email", async (req, res) => {
             content: [
               {
                 type: 'text/html',
-                value: '<p>Hello </p><p>Attaching your ai painting image in this email</p>'
+                value: '<p>Hello </p><p>Thanks for using our website for suggestions of painting your wall</p><p>Attaching your ai painting image in this email</p>'
               },
             ],
             attachments: [

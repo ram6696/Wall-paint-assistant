@@ -78,7 +78,7 @@ const LoginForm = () => {
       <ToastContainer />
       <Row className="bg-success text-center text-white p-3 border rounded">
         <Col className="justify-content-center">
-          <h3>Welcome to AI Painting Assistant</h3>
+          <h3>Welcome to Digital Colour Assistant</h3>
         </Col>
       </Row>
       <div className="login_form">

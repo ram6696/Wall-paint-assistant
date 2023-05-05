@@ -19,6 +19,7 @@ function RoomColorChanger() {
   const [otherItemsBoundingBoxes, setOtherItemsBoudingBoxes] = useState([{}]);
   const [showRecommendedColors, setShowRecommendedColors] = useState(false);
   const [loading, setLoading] = useState(false);
+  const allowedFormats = ['image/jpeg', 'image/jpg', 'image/png'];
 
 
   const handleShowRecommendedColors = () => {
@@ -27,7 +28,13 @@ function RoomColorChanger() {
 
   const handleFileInputChange = async (e) => {
     if (e.target.files && e.target.files[0]) {
+      setSelectedImage(null);
+      setModifiedImage(null);
+      setRecommendedColors([]);
+      setRoomType(null);
+      setRoomItems(null)
       setSelectedFile(e.target.files[0]);
+      setShowRecommendedColors(false);
       console.log(e.target.files[0]);
 
       const reader = new FileReader();
@@ -157,6 +164,14 @@ function RoomColorChanger() {
     </div>
   );
 
+  function Banner({ text }) {
+    return (
+      <div style={{ background: 'orange' }}>
+        <p>{text}</p>
+      </div>
+    );
+  }
+
   return (
     <>
         <NavBar />
@@ -164,11 +179,12 @@ function RoomColorChanger() {
             <input
                 type="file"
                 name="file"
-                accept="image/*"
+                accept={allowedFormats.join(',')}
                 onChange={handleFileInputChange}
                 style={{ display: 'none' }}
                 id="file-input"
             />
+            <Banner text={`NOTE: Allowed file types: ${allowedFormats.join(', ')}`} />
             <button onClick={() => document.getElementById('file-input').click()} className="upload-btn">
                 Select Image
             </button>
