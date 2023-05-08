@@ -20,6 +20,7 @@ function RoomColorChanger() {
   const [showRecommendedColors, setShowRecommendedColors] = useState(false);
   const [loading, setLoading] = useState(false);
   const allowedFormats = ['image/jpeg', 'image/jpg', 'image/png'];
+  const [paletteDropDown, setPaletteDropDown] = useState({});
 
 
   const handleShowRecommendedColors = () => {
@@ -151,18 +152,27 @@ function RoomColorChanger() {
     });
   }
 
-  const ColorPalette = ({ baseColor, palette }) => (
-    <div style={{ marginBottom: '20px' }}>
-      <h3>Base Color: {baseColor.name}</h3>
-      <ColorBox color={baseColor.hex} name={baseColor.name} />
-      <h4>Palette:</h4>
-      <div>
-        {palette.map((color, index) => (
-          <ColorBox key={index} color={color.hex} name={color.name} r={color.r} g={color.g} b={color.b} a={color.a} />
-        ))}
+  const ColorPalette = ({ baseColor, palette }) => {
+    return (
+      <div className="color-palette">
+        <h3 onClick={() => handlePaletteDropdown(baseColor.name)}>
+          Base Color: {baseColor.name}
+          {paletteDropDown[baseColor.name] ? '▲' : '▼'}
+        </h3>
+        <ColorBox color={baseColor.hex} name={baseColor.name} />
+        {paletteDropDown[baseColor.name] && (
+          <div>
+            <h4>Palette:</h4>
+            <div>
+              {palette.map((color, index) => (
+                <ColorBox key={index} color={color.hex} name={color.name} r={color.r} g={color.g} b={color.b} a={color.a} />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   function Banner({ text }) {
     return (
@@ -171,6 +181,13 @@ function RoomColorChanger() {
       </div>
     );
   }
+
+  const handlePaletteDropdown = (baseColorName) => {
+    setPaletteDropDown({
+        ...paletteDropDown,
+        [baseColorName]: !paletteDropDown[baseColorName]
+    });
+  };
 
   return (
     <>

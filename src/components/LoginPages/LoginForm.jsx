@@ -15,8 +15,6 @@ import WebCookies from "../../components/common/Cookies/cookies";
 import LoginApi from "./LoginApi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import backgroundImage from './background.jpg';
-
 
 
 const LoginForm = () => {
