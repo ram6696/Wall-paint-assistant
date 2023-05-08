@@ -16,11 +16,7 @@ const sgMail = require('@sendgrid/mail');
 const { randomUUID } = require('crypto');
 sgMail.setApiKey('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');
 console.log(process.env.OWN_SES_ACCESS_KEY);
-const s3 = new AWS.S3({
-  accessKeyId: 'AKIAXLWLRZSGN6FPHTPJ',
-  secretAccessKey: 'xXJ+0stcPjdyXK2j0yToMssnBDabNbrkuf//xLjJ',
-  region: 'ap-south-1'
-}); // replace with your desired region 
+ // replace with your desired region 
 
 const app = express();
 app.use(cors());
@@ -187,7 +183,12 @@ app.post("/send-email", async (req, res) => {
     const payload = req.body;
     console.log(payload.to, 'to email address');
     const base64 = Buffer.from(payload.image);
-    const uniqueKey = randomUUID()
+    const uniqueKey = randomUUID();
+    const s3 = new AWS.S3({
+      accessKeyId: process.env.OWN_SES_ACCESS_KEY,
+      secretAccessKey: process.env.OWN_SECRET_ACCESS_KEY,
+      region: process.env.OWN_SES_REGION,
+    });
     s3.upload({
       Body: base64,
       Bucket: 'aidownloadimages',
