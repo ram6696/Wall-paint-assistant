@@ -16,6 +16,7 @@ import LoginApi from "./LoginApi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+
 const LoginForm = () => {
   // state
   let [state, setState] = useState({
@@ -77,8 +78,27 @@ const LoginForm = () => {
     <Fragment>
       <ToastContainer />
       <Row className="bg-success text-center text-white p-3 border rounded">
-        <Col className="justify-content-center">
+        <Col className="d-flex align-items-center justify-content-left">
           <h3>Welcome to Digital Colour Assistant</h3>
+        </Col>
+        <Col className="d-flex align-items-center justify-content-end">
+          <button
+            type="button"
+            className="btn btn-link"
+            onClick={() => navigate(`/aboutUs`, { state: { page: "dashboard" } })}
+            style={{
+              padding: '0.5rem 1rem',
+              border: '1px solid #ccc',
+              borderRadius: '0.25rem',
+              backgroundColor: '#fff',
+              color: '#007bff',
+              textDecoration: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.3s ease',
+            }}
+          >
+          About Us
+          </button>
         </Col>
       </Row>
       <div className="login_form">

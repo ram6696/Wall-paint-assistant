@@ -11,7 +11,16 @@ const namer = require("color-namer");
 const UserModel = require("./models/Users");
 const AppResponse = require("./services/AppResponse");
 const FormData = require('form-data');
-
+const AWS = require('aws-sdk');
+const sgMail = require('@sendgrid/mail');
+const { randomUUID } = require('crypto');
+sgMail.setApiKey('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');
+console.log(process.env.OWN_SES_ACCESS_KEY);
+const s3 = new AWS.S3({
+  accessKeyId: 'AKIAXLWLRZSGN6FPHTPJ',
+  secretAccessKey: 'xXJ+0stcPjdyXK2j0yToMssnBDabNbrkuf//xLjJ',
+  region: 'ap-south-1'
+}); // replace with your desired region 
 
 const app = express();
 app.use(cors());
@@ -162,53 +171,73 @@ function getRoomType(itemsInRoom) {
   return bestMatch;
 }
 
+const getSESObject = () => {
+  console.log(process.env.SES_ACCESS_KEY, process.env.SES_SECRET_ACCESS_KEY, process.env.SES_REGION);
+  AWS.config.update({
+      accessKeyId: process.env.SES_ACCESS_KEY,
+      secretAccessKey: process.env.SES_SECRET_ACCESS_KEY,
+      region: process.env.SES_REGION,
+  });
+
+  return new AWS.SES({ apiVersion: process.env.SES_API_VERSION });
+}
+
 app.post("/send-email", async (req, res) => {
   try {
     const payload = req.body;
     console.log(payload.to, 'to email address');
-    const base64 = Buffer.from(payload.image).toString('base64');
-
-    const url = 'https://api.sendgrid.com/v3/mail/send';
-        const options = {
-            headers: {
-                'content-type': 'application/json',
-                'authorization': 'Bearer' + ' ' + process.env.SENDGRID_KEY,
-            },
-        };
-
-        const data = {
-            personalizations: [
-                {
-                    to: [
-                        {
-                            email: payload.to,
-                        },
-                    ],
-                    subject: "AI Painting download Image",
-                },
-            ],
-            from: {
-                email: 'noreply@wfglobal.org',
-                name: 'AI painting',
-            },
-            content: [
-              {
-                type: 'text/html',
-                value: '<p>Hello </p><p>Thanks for using our website for suggestions of painting your wall</p><p>Attaching your ai painting image in this email</p>'
+    const base64 = Buffer.from(payload.image);
+    const uniqueKey = randomUUID()
+    s3.upload({
+      Body: base64,
+      Bucket: 'aidownloadimages',
+      Key: uniqueKey,
+      ACL: 'public-read',
+      ContentType: 'image/jpeg'
+    }, (err, data) => {
+      if (err) {
+        console.error(err);
+      } else {
+        console.log('Image uploaded successfully!', data.Location);
+        const downloadLink = data.Location;
+        const params = {
+          Destination: {
+              ToAddresses: [payload.to],
+          },
+          Message: {
+              Body: {
+                  Html: {
+                      Charset: 'UTF-8',
+                      Data: `<p>Hello </p><p>Thanks for using our website for suggestions of painting your wall</p>
+                            <p>Here is an image that you can download:</p>
+                            <a href="${downloadLink}" download>Download Image</a>`
+                  },
               },
-            ],
-            attachments: [
-              {
-                content: base64,
-                filename: 'ai-paint-recommended.jpeg',
-                type: 'image/jpeg',
-                disposition: 'attachment'
-              }
-            ]
-        };
-        return axios.post(url, data, options);
+              Subject: {
+                  Charset: 'UTF-8',
+                  Data: "AI Painting download Image",
+              },
+          },
+          Source: `${process.env.FROM_NAME} <${process.env.FROM_EMAIL}>`,
+      };
+      console.log(params);
+      const ses = getSESObject();
+      ses.sendEmail(params)
+      .promise()
+      .then((data) => {
+        console.log('Email sent:', data);
+      })
+      .catch((err) => {
+        console.error(err, err.stack);
+      })
+            res.status(200).send({
+             message: 'EMAIL successfully sent'
+            })
+      }
+    })
+
   } catch (error) {
-    //  console.log(error);
+     console.log(error);
   }
 })
 

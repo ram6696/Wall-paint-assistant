@@ -7,6 +7,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import LoginForm from "./components/LoginPages/LoginForm";
 import Registration from "./components/LoginPages/Registration";
 import Dashboard from './components/dashboard/Dashboard';
+import AboutUs from "./components/AboutUs";
 
 // Page roots
 const router = createBrowserRouter([
@@ -21,6 +22,10 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />
+  },
+  {
+    path: "/aboutUs",
+    element: <AboutUs/>
   }
 ]);
 

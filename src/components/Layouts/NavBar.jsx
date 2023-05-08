@@ -63,34 +63,33 @@ const NavBar = (props) => {
         handleClose={handleLogoutClose}
         logOutFun={logOutFun}
       />
-<Navbar collapseOnSelect expand="lg" bg="success" variant="dark">
-  <Navbar.Toggle aria-controls="responsive-navbar-nav" />
-  <Navbar.Collapse id="responsive-navbar-nav">
-    <Nav className="mr-auto">
-      <span style={{ color: "white", marginLeft: "50px" }}>
-        Welcome, {currentUser.email}!
-      </span>
-    </Nav>
-    <Nav className="ml-auto">
-      <Nav.Link eventKey={2}>
-        <span onClick={() => logoutModal("logout", logoutToggle)}>
-          <abbr title="logout">
-            <FaSignOutAlt
-              style={{
-                color: "white",
-                width: "35px",
-                height: "25px",
-                margin: "5px",
-                cursor: "pointer",
-              }}
-            />
-          </abbr>
-        </span>
-      </Nav.Link>
-    </Nav>
-  </Navbar.Collapse>
-</Navbar>
-
+      <Navbar collapseOnSelect expand="lg" bg="success" variant="dark">
+      <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+      <Navbar.Collapse id="responsive-navbar-nav">
+        <Nav className="mr-auto">
+          <span style={{ color: "white", marginLeft: "50px" }}>
+            Welcome, {currentUser.email}!
+          </span>
+        </Nav>
+        <Nav className="ml-auto">
+          <Nav.Link eventKey={2}>
+            <span onClick={() => logoutModal("logout", logoutToggle)}>
+              <abbr title="logout">
+              <FaSignOutAlt
+                style={{
+                  color: "white",
+                  width: "35px",
+                  height: "25px",
+                  margin: "5px",
+                  cursor: "pointer",
+                }}
+              />
+              </abbr>
+            </span>
+          </Nav.Link>
+        </Nav>
+      </Navbar.Collapse>
+      </Navbar>
     </React.Fragment>
   );
    
