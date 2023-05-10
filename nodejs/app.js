@@ -76,11 +76,16 @@ app.post('/upload', async (req, res) => {
 app.post('/get-image-info', async (req, res) => {
     try {
       const image = req.body.image;
-      const body = {
-        image: {
-          base64: image.base64.split('data:image/jpeg;base64,')[1]
-        }
-      };
+      const prefix = 'data:image/';
+      const supportedFormats = ['jpeg', 'png', 'jpg'];
+      const formatIndex = supportedFormats.findIndex((format) => image.base64.startsWith(`${prefix}${format}`));
+      if (formatIndex >= 0) {
+        const format = supportedFormats[formatIndex];
+        const body = {
+          image: {
+            base64: image.base64.split(`${prefix}${format};base64,`)[1]
+          }
+        };
       const darwinConfig = {
         url: 'https://darwin.v7labs.com/ai/models/e59b93fa-27df-4f29-b2ad-b46ce8cf5312/infer',
         headers: {
@@ -130,7 +135,7 @@ app.post('/get-image-info', async (req, res) => {
       const roomType = getRoomType(itemsInRoom);
 
       // get the room type according to the items in the room
-      const recommendedColors = await recommendColorPalettes(image.base64.split('data:image/jpeg;base64,')[1]);
+      const recommendedColors = await recommendColorPalettes(image.base64.split(`${prefix}${format};base64,`)[1]);
       res.status(200).send({
         itemsInRoom,
         wallBoundingBoxes,
@@ -138,7 +143,7 @@ app.post('/get-image-info', async (req, res) => {
         recommendedColors,
         roomType,
       })
-    } catch (error) {
+    }} catch (error) {
         console.log(error);
         res.status(500).send('Error processing image');
     }
