@@ -16,6 +16,7 @@ import {
   Row,
 } from "react-bootstrap";
 import CardHeader from "react-bootstrap/esm/CardHeader";
+import backgroundImg from '../LoginPages/background_image.jpg';
 
 // Api
 import RegisterApi from "./RegisterApi";
@@ -89,11 +90,22 @@ const Registration = (props) => {
   };
 
   return (
+    <div style={{
+      backgroundImage: `url(${backgroundImg})`,
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      height: '100vh',
+      width: '100vw',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
     <Fragment>
       <ToastContainer />
-      <Row className="bg-success text-center text-white p-3 border rounded">
+      {/* <Row className="bg-success text-center text-white p-3 border rounded">
         <Col className="d-flex align-items-center justify-content-left">
-          <h3>Welcome to Digital Colour Assistant</h3>
+          <h3>Digital Colour Assistant</h3>
         </Col>
         <Col className="d-flex align-items-center justify-content-end">
           <button
@@ -114,7 +126,7 @@ const Registration = (props) => {
           About Us
           </button>
         </Col>
-      </Row>
+      </Row> */}
       <Container className="mt-5">
         <Row className="justify-content-center">
           <Col sm md={8} lg={6}>
@@ -184,7 +196,7 @@ const Registration = (props) => {
                     Sign up
                   </Button>
                   <span className="ml-6">
-                    have an account? <a href="/"> Login</a>
+                    have an account? <a href="/login"> Login</a>
                   </span>
                 </Card.Footer>
               </Card>
@@ -193,6 +205,7 @@ const Registration = (props) => {
         </Row>
       </Container>
     </Fragment>
+    </div>
   );
 };
 

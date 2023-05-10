@@ -15,6 +15,7 @@ import WebCookies from "../../components/common/Cookies/cookies";
 import LoginApi from "./LoginApi";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import backgroundImg from '../LoginPages/background_image.jpg';
 
 
 const LoginForm = () => {
@@ -75,11 +76,22 @@ const LoginForm = () => {
   };
 
   return (
+    <div style={{
+      backgroundImage: `url(${backgroundImg})`,
+      backgroundSize: 'cover',
+      backgroundRepeat: 'no-repeat',
+      height: '100vh',
+      width: '100vw',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }}>
     <Fragment>
       <ToastContainer />
-      <Row className="bg-success text-center text-white p-3 border rounded">
+      {/* <Row className="bg-success text-center text-white p-3 border rounded">
         <Col className="d-flex align-items-center justify-content-left">
-          <h3>Welcome to Digital Colour Assistant</h3>
+          <h3>Digital Colour Assistant</h3>
         </Col>
         <Col className="d-flex align-items-center justify-content-end">
           <button
@@ -100,11 +112,10 @@ const LoginForm = () => {
           About Us
           </button>
         </Col>
-      </Row>
-      <div className="login_form">
-        <Container className="mt-5 ">
+      </Row> */}
+        <Container className="mt-5">
           <Row className="justify-content-center">
-            <Col sm={12} md={8} lg={6}>
+            <Col sm md={8} lg={6}>
               <Form onSubmit={handleSubmit}>
                 <Card className="card">
                   <CardHeader className="text-center text-white bg-success">
@@ -149,8 +160,8 @@ const LoginForm = () => {
             </Col>
           </Row>
         </Container>
-      </div>
     </Fragment>
+    </div>
   );
 };
 

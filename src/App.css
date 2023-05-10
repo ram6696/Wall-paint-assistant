@@ -9,6 +9,20 @@
     text-align: center;
     width: 200px;
   }
+
+.transparent-button {
+  background-color: #4caf4f5c;
+  border: none;
+  color: rgb(11, 11, 11);
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 10px 2px;
+  cursor: pointer;
+  border-radius: 5px;
+}
   
 
 .upload-btn {

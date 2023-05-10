@@ -13,6 +13,10 @@ import AboutUs from "./components/AboutUs";
 const router = createBrowserRouter([
   {
     path: "/",
+    element: <AboutUs/>
+  },
+  {
+    path: "/login",
     element: <LoginForm />,
   },
   {
@@ -22,10 +26,6 @@ const router = createBrowserRouter([
   {
     path: "/dashboard",
     element: <Dashboard />
-  },
-  {
-    path: "/aboutUs",
-    element: <AboutUs/>
   }
 ]);
 
